@@ -212,19 +212,122 @@ public:
    */
   bool printGIZATrgVocab(const char* trgOutputVocabFileName) override;
 
-  // Source and target vocabulary functions
-  size_t getSrcVocabSize() const override; // Returns the source vocabulary size
+  /**
+   * @brief Get the number of words in the source vocab
+   * 
+   * @details size of swVocab.stringToSrcWordIndexMap)
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * @return size_t the number of words in the source vocabulary
+   */
+  size_t getSrcVocabSize() const override;
+
+  /**
+   * @brief Get the word index of a word in the source vocabulary
+   * 
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * @param s The word token from the source language
+   * @return WordIndex that uniquely identifies that word (1 if not found)
+   */
   WordIndex stringToSrcWordIndex(std::string s) const override;
+
+  /**
+   * @brief Get the word token (string) that goes with the given word index
+   * 
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * @param w The WordIndex (unsigned int) of a word in the source vocabulary
+   * @return std::string of the word token from the source vocabulary or "UNKNOWN_WORD" if not found
+   */
   std::string wordIndexToSrcString(WordIndex w) const override;
+
+  /**
+   * @brief Check if a given string is a word token in the source language
+   * 
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * @param s the string to be checked
+   * @return true if the provided word token exists in the source language
+   * @return false if the provided word token is not found
+   */
   bool existSrcSymbol(std::string s) const override;
+
+  /**
+   * @brief Convert a vector of words (strings) from the source language to a vector of word indexes
+   * 
+   * @details
+   * This conversion is done using swVocab.stringToSrcWordIndexMap.
+   * If a word in the given vector is not already in the vocabulary it is added to the vocabulary.
+   * @see AlignmentModelBase::addSrcSymbol
+   * 
+   * @param s a vector of word tokens (strings) in the source language
+   * @return std::vector<WordIndex> 
+   */
   std::vector<WordIndex> strVectorToSrcIndexVector(std::vector<std::string> s) override;
+
+  /**
+   * @brief Ensure a word token (string) is in the vocabulary of the source language
+   * 
+   * @param s The word to be included in the source language
+   * @return WordIndex the new (or existing) word index for the given word
+   */
   WordIndex addSrcSymbol(std::string s) override;
 
+  /**
+   * @brief Get the number of words in the target vocab
+   * 
+   * @details size of swVocab.stringToTrgWordIndexMap)
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * @return size_t the number of words in the target vocabulary
+   */
   size_t getTrgVocabSize() const override; // Returns the target vocabulary size
+
+  /**
+   * @brief Convert the given word (string) to its Word Index in the target vocabulary
+   * 
+   * @param t The word token (string) from the target vocabulary
+   * @return WordIndex (unsigned int) that corresponds to that word (1 if not in vocab)
+   */
   WordIndex stringToTrgWordIndex(std::string t) const override;
+
+  /**
+   * @brief Convert the given word index (unsigned int) to its corresponding word token (string) in the target vocab
+   * 
+   * @param w the word index (unsigned int) of the word to be retrieved
+   * @return std::string the word corresponding to that index or "UNKNOWN_WORD" if not in the target vocabulary
+   */
   std::string wordIndexToTrgString(WordIndex w) const override;
+
+  /**
+   * @brief Check if a given string is a word in the target language
+   * 
+   * @param t the word (string) to be checked
+   * @return true if the word exists in the language
+   * @return false if the word is not in the target vocabulary
+   */
   bool existTrgSymbol(std::string t) const override;
+
+  /**
+   * @brief Convert a vector of words (strings) from the target language to a vector of word indexes
+   * 
+   * @details
+   * This conversion is done using swVocab.stringToTrgWordIndexMap.
+   * If a word in the given vector is not already in the vocabulary it is added to the vocabulary.
+   * @see AlignmentModelBase::addTrgSymbol
+   * 
+   * @param t a vector of word tokens (strings) in the target language
+   * @return std::vector<WordIndex> 
+   */
   std::vector<WordIndex> strVectorToTrgIndexVector(std::vector<std::string> t) override;
+
+  /**
+   * @brief Ensure the given word token (string) is in the target vocabulary
+   * 
+   * @param t the word (token) to include in the target vocabulary
+   * @return WordIndex the new (or existing) index of the given word
+   */
   WordIndex addTrgSymbol(std::string t) override;
 
   // Utilities
