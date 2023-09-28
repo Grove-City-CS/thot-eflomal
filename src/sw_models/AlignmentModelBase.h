@@ -12,10 +12,37 @@
 class AlignmentModelBase : public virtual AlignmentModel
 {
 public:
-  // Thread/Process safety related functions
+  /**
+   * @brief Determines if it is safe to read from the model in parallel
+   * 
+   * The default implementation returns a value of true. Classes where this is not 
+   * true must override this method and have it return false.
+   * 
+   * @return true if it it is safe or false if it is not
+   */
   bool modelReadsAreProcessSafe() override;
 
+  /**
+   * @brief Set the value of the variational Bayes boolean for this Alignment Model
+   * 
+   * @details
+   * The Variational Bayes boolean refers to whether the model should
+   * use this technique during its expectation maximization steps.
+   * 
+   * @param variationalBayes the new value for this variable
+   */
   void setVariationalBayes(bool variationalBayes) override;
+
+  /**
+   * @brief Get the Variational Bayes value for this Alignment Model
+   * 
+   * @details
+   * The Variational Bayes boolean refers to whether the model should
+   * use this technique during its expectation maximization steps.
+   * 
+   * @return true 
+   * @return false 
+   */
   bool getVariationalBayes() override;
 
   /**
@@ -23,7 +50,8 @@ public:
    * 
    * @details
    * The sentence pairs read by this method are added to the sentenceHandler as 
-   * vectors of words using addSentencePair.
+   * vectors of words using addSentencePair. The input file formats are designed 
+   * to correspond to the three input files used by the GIZA++ system.
    * 
    * @see AlignmentModelBase::addSentencePair
    * @see AlignmentModelBase::sentenceHandler
@@ -35,8 +63,8 @@ public:
    *                       @default: with "" 1 for every sentence pair
    * @param sentRange starting and ending indices of sentences to be read
    * @param verbose   how much additional output should be printed [0/1]
-   * @return true     ?if the operation was successful?
-   * @return false    ?if the operation was unsuccessful?
+   * @return true if there was an error
+   * @return false if there was no error
    */
   bool readSentencePairs(const char* srcFileName, const char* trgFileName, const char* sentCountsFile,
                          std::pair<unsigned int, unsigned int>& sentRange, int verbose = 0) override;
@@ -96,21 +124,93 @@ public:
   // Obtains the best alignment for the given sentence pair (input
   // parameters are now string vectors)
 
+  /**
+   * @brief Outputs a word alignment of these sentences in the GIZA format
+   * 
+   * @details
+   * Specifically the alignment format described in part V section B.
+   * @link https://github.com/moses-smt/giza-pp/blob/master/GIZA%2B%2B-v2/README
+   * 
+   * @param sourceSentence A space delimited string of word tokens in the source language
+   * @param targetSentence A space delimited string of word tokens in the target language
+   * @param p A Prob object (double) representing the alignment quality
+   * @param alig A vector of indexes indicating alignment. The vector has 
+   *             one item per token in the target sentence and the number stored 
+   *             there is the index of the word from the source sentece that is 
+   *             responsible for that word in the target sentence.
+   * @param outS A reference to the output stream where the GIZA alignment will be written
+   * @return a reference to the input parameter outS
+   */
   std::ostream& printAligInGizaFormat(const char* sourceSentence, const char* targetSentence, Prob p,
                                       std::vector<PositionIndex> alig, std::ostream& outS) override;
-  // Prints the given alignment to 'outS' stream in GIZA format
 
-  // Functions for loading vocabularies
+  /**
+   * @brief Load a GIZA vocabulary file for the source language into swVocab
+   * 
+   * @details
+   * The vocabulary is stored in swVocab under the two maps:
+   *   + srcWordIndexMapToString (IdxToStrVocab i.e. Map<WordIndex, String> i.e. unsigned int -> std::string)
+   *   + stringToSrcWordIndexMap (StrToIdxVocab i.e. Map<String, WordIndex> i.e. std::string -> unsigned int)
+   * 
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * Specifically the vocabulary format described in part IV section A.
+   * @link https://github.com/moses-smt/giza-pp/blob/master/GIZA%2B%2B-v2/README
+   * 
+   * @param srcInputVocabFileName a file in the GIZA vocabulary format
+   * @param verbose how much additional output should be printed [0/1]
+   * @return true if there was an error
+   * @return false if there was no error
+   */
   bool loadGIZASrcVocab(const char* srcInputVocabFileName, int verbose = 0) override;
-  // Reads source vocabulary from a file in GIZA format
-  bool loadGIZATrgVocab(const char* trgInputVocabFileName, int verbose = 0) override;
-  // Reads target vocabulary from a file in GIZA format
 
-  // Functions for printing vocabularies
+  /**
+   * @brief Load a GIZA vocabulary file for the target language into swVocab
+   * 
+   * @details
+   * The vocabulary is stored in swVocab under the two maps:
+   *   + trgWordIndexMapToString (IdxToStrVocab i.e. Map<WordIndex, String> i.e. unsigned int -> std::string)
+   *   + stringToTrgWordIndexMap (StrToIdxVocab i.e. Map<String, WordIndex> i.e. std::string -> unsigned int)
+   * 
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * Specifically the vocabulary format described in part IV section A.
+   * @link https://github.com/moses-smt/giza-pp/blob/master/GIZA%2B%2B-v2/README
+   * 
+   * @param trgInputVocabFileName a file in the GIZA vocabulary format
+   * @param verbose how much additional output should be printed [0/1]
+   * @return true if there was an error
+   * @return false if there was no error
+   */
+  bool loadGIZATrgVocab(const char* trgInputVocabFileName, int verbose = 0) override;
+
+  /**
+   * @brief Writes the vocab in swVocab.stringToSrcWordIndexMap to the file in the GIZA vocabulary format
+   * 
+   * @see AlignmentModelBase::swVocab (SingleWordVocab)
+   * 
+   * @details
+   * Specifically the vocabulary format described in part IV section A.
+   * @link https://github.com/moses-smt/giza-pp/blob/master/GIZA%2B%2B-v2/README
+   * 
+   * @param srcOutputVocabFileName The file where the source vocabulary should be written
+   * @return true if an error occurs
+   * @return false if the operation is completed successfully
+   */
   bool printGIZASrcVocab(const char* srcOutputVocabFileName) override;
-  // Reads source vocabulary from a file in GIZA format
+
+  /**
+   * @brief Writes the vocab in swVocab.stringToTrgWordIndexMap to the file in the GIZA vocabulary format
+   * 
+   * @details
+   * Specifically the vocabulary format described in part IV section A.
+   * @link https://github.com/moses-smt/giza-pp/blob/master/GIZA%2B%2B-v2/README
+   * 
+   * @param trgOutputVocabFileName The file where the target vocabulary should be written
+   * @return true if an error occurs
+   * @return false if the operation is completed successfully
+   */
   bool printGIZATrgVocab(const char* trgOutputVocabFileName) override;
-  // Reads target vocabulary from a file in GIZA format
 
   // Source and target vocabulary functions
   size_t getSrcVocabSize() const override; // Returns the source vocabulary size
@@ -165,7 +265,7 @@ protected:
 
   PositionIndex maxSentenceLength = 1024;
   double alpha;
-  bool variationalBayes;
+  bool variationalBayes; /* whether to use Variational Bayes for EM */
   std::shared_ptr<SingleWordVocab> swVocab;
   std::shared_ptr<LightSentenceHandler> sentenceHandler;
   std::shared_ptr<WordClasses> wordClasses;
