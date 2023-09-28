@@ -18,12 +18,32 @@ public:
   void setVariationalBayes(bool variationalBayes) override;
   bool getVariationalBayes() override;
 
-  // Functions to read and add sentence pairs
+  /**
+   * @brief Read's matching sentence pairs in the source and target languages.
+   * 
+   * @details
+   * The sentence pairs read by this method are added to the sentenceHandler as 
+   * vectors of words using addSentencePair.
+   * 
+   * @see AlignmentModelBase::addSentencePair
+   * @see AlignmentModelBase::sentenceHandler
+   * 
+   * @param srcFileName path to a file in the source language (newline and space delimited)
+   * @param trgFileName path to a file in the target language (newline and space delimited)
+   * @param sentCountsFile path to a newline delimited file of frequencies for how many times
+   *                       the corresponding sentence pair occurs in the corpus.
+   *                       @default: with "" 1 for every sentence pair
+   * @param sentRange starting and ending indices of sentences to be read
+   * @param verbose   how much additional output should be printed [0/1]
+   * @return true     ?if the operation was successful?
+   * @return false    ?if the operation was unsuccessful?
+   */
   bool readSentencePairs(const char* srcFileName, const char* trgFileName, const char* sentCountsFile,
                          std::pair<unsigned int, unsigned int>& sentRange, int verbose = 0) override;
   std::pair<unsigned int, unsigned int> addSentencePair(std::vector<std::string> srcSentStr,
                                                         std::vector<std::string> trgSentStr, Count c) override;
   unsigned int numSentencePairs() override;
+
   // NOTE: the whole valid range in a given moment is
   // [ 0 , numSentPairs() )
   int getSentencePair(unsigned int n, std::vector<std::string>& srcSentStr, std::vector<std::string>& trgSentStr,
