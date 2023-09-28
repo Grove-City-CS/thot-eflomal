@@ -330,8 +330,20 @@ public:
    */
   WordIndex addTrgSymbol(std::string t) override;
 
-  // Utilities
+  /**
+   * @brief Returns a copy of the given word index (unsigned int) vector with the NULL_WORD (0) prepended
+   * 
+   * @param vw The original word index (unsigned int) vector
+   * @return std::vector<WordIndex> A copy of vw with a prepended WordIndex of 0 for NULL_WORD
+   */
   std::vector<WordIndex> addNullWordToWidxVec(const std::vector<WordIndex>& vw) override;
+
+  /**
+   * @brief Returns a copy of the given word token (string) vector with the NULL_WORD_STR "NULL" prepended
+   * 
+   * @param vw The original word token (string) vector
+   * @return std::vector<WordIndex> A copy of vw with a prepended word token of "NULL" for NULL_WORD_STR
+   */
   std::vector<std::string> addNullWordToStrVec(const std::vector<std::string>& vw) override;
 
   WordClassIndex addSrcWordClass(const std::string& c) override;
