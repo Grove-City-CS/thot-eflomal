@@ -9,6 +9,7 @@
 #include <set>
 #include <yaml-cpp/yaml.h>
 
+/// @brief 
 class AlignmentModelBase : public virtual AlignmentModel
 {
 public:
@@ -46,7 +47,8 @@ public:
   bool getVariationalBayes() override;
 
   /**
-   * @brief Read's matching sentence pairs in the source and target languages.
+   * @brief Adds matching sentence pairs in the source and target languages to
+   *        this object's collection, replacing any previous sentence pairs.
    * 
    * @details
    * The sentence pairs read by this method are added to the sentenceHandler as 
@@ -61,25 +63,62 @@ public:
    * @param sentCountsFile path to a newline delimited file of frequencies for how many times
    *                       the corresponding sentence pair occurs in the corpus.
    *                       @default: with "" 1 for every sentence pair
-   * @param sentRange starting and ending indices of sentences to be read
+   * @param[out] sentRange starting and ending indices of sentences to be read
    * @param verbose   how much additional output should be printed [0/1]
    * @return true if there was an error
    * @return false if there was no error
    */
   bool readSentencePairs(const char* srcFileName, const char* trgFileName, const char* sentCountsFile,
                          std::pair<unsigned int, unsigned int>& sentRange, int verbose = 0) override;
+  
+  
+  
+  /**
+   *  @brief Add an in-memory sentence to this object's collection
+   *  @param srcSentStr Sentence in source language; each element is a token
+   *  @param trgSentStr Sentence in target language; each element is a token
+   *  @param c Frequency count (should be 1 unless the sentence pair is repeated)
+   *  @param verbose 1 for verbose output; 0 for normal operation
+   *  @return (i, i) where i is the index of the new sentence pair in this object's collection
+   */
   std::pair<unsigned int, unsigned int> addSentencePair(std::vector<std::string> srcSentStr,
                                                         std::vector<std::string> trgSentStr, Count c) override;
+  
+  /**
+   * @brief The number of sentence pairs in this object's collection, including in-file and in-memory
+   * @return The number of sentence pairs in this object's collection
+   */ 
   unsigned int numSentencePairs() override;
 
-  // NOTE: the whole valid range in a given moment is
-  // [ 0 , numSentPairs() )
+  /**
+   * @brief Get one sentence pair and count
+   * 
+   *  NOTE: For efficient access of multiple sentences, retrieve in order of increasing index.
+   * 
+   *  @param n Index of the sentence pair. Must be in [0, numSentencePairs() - 1]. Indices for in-file sentences precede in-memory sentences.
+   *  @param[out] srcSentStr Filled with the sentence in the sourse language, one element per token
+   *  @param[out] trgSentStr Filled with the sentence in the target language, one element per token
+   *  @param[out] c Filled with the frequency count for the sentence pair
+   *  @return THOT_OK upon success or THOT_ERROR upon error
+   */
   int getSentencePair(unsigned int n, std::vector<std::string>& srcSentStr, std::vector<std::string>& trgSentStr,
                       Count& c) override;
 
+
+  /**
+   *  @brief Constant for max supported sentence length
+   *  @return Constant for max supported sentence length
+   */
   PositionIndex getMaxSentenceLength() override;
 
-  // Functions to print sentence pairs
+
+  /**
+   *  @brief Print all sentence pairs and frequency counts to files
+   *  @param srcSentFile Path to a file to create, writing all source sentences there, one per line, with space-delimited tokens
+   *  @param trgSentFile Path to a file to create, writing all target sentences there, one per line, with space-delimited tokens
+   *  @param sentCountsFile Path to a file to create, writing all frequency counts there, one per line
+   *  @return THOT_OK upon success or THOT_ERROR upon error
+   */
   bool printSentencePairs(const char* srcSentFile, const char* trgSentFile, const char* sentCountsFile) override;
 
   // Returns log-likelihood. The first double contains the
