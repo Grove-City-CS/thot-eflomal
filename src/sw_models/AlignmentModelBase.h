@@ -141,23 +141,110 @@ public:
   LgProb computePhraseSumLogProb(const std::vector<WordIndex>& srcPhrase, const std::vector<WordIndex>& trgPhrase,
                                  int verbose = 0) override;
 
-  // Best-alignment functions
+// Best-alignment functions
+  /**
+   * @brief Outputs a file with the word alignment in the GIZA format for each sentence pair in the src file and trg file 
+   *
+   * @see AlignmentModelBase::addSrcSymbol
+   * @see AlignmentModelBase::printAligInGizaFormat
+   *
+   * @param sourceTestFileName path to a file in the source language (newline and space delimited)
+   * @param targetTestFilename path to a file in the target language (newline and space delimited)
+   * @param outFileName path to a file where GIZA alignment will be written
+   * @return true if there was an error
+   * @return false if there was no error
+   */
   bool getBestAlignments(const char* sourceTestFileName, const char* targetTestFilename,
                          const char* outFileName) override;
   using AlignmentModel::getBestAlignment;
   // Obtains the best alignments for the sentence pairs given in
   // the files 'sourceTestFileName' and 'targetTestFilename'. The
   // results are stored in the file 'outFileName'
+  
+  /**
+   * @brief Outputs an alignment log probability and the best word alignment matrix for a src and trg sentence 
+   *
+   * @details Converts source and target sentences (char*) to vectors of words (strings) and calls another
+   * getBestAlignment method
+   * 
+   * @see StrProcUtils::charItemsToVector
+   *
+   * @param srcSentence A sentence of type string from the src corresponding to trgSentence
+   * @param trgSentence A sentence of type string from the trg corresponding to srcSentence
+   * @param bestWaMatrix A reference to a WordAlignmentMatrix where the word alignment matrix will be written
+   * @return LgProb A log probability for the alignment calculated
+   */
   LgProb getBestAlignment(const char* srcSentence, const char* trgSentence, WordAlignmentMatrix& bestWaMatrix) override;
   // Obtains the best alignment for the given sentence pair
+
+  /**
+   * @brief Outputs an alignment log probability and the best word alignment matrix for a src and trg sentence
+   *
+   * @details Converts source and target sentences from vectors of words (strings) to vectors of
+   * WordIndex and then calls another getBestAlignment method
+   * 
+   * @see AlignmentModelBase::strVectorToSrcIndexVector
+   * @see AlignmentModelBase::strVectorToTrgIndexVector
+   *
+   * @param srcSentence A sentence from the src represented as a vector of words (strings) that corresponds to trgSentence
+   * @param trgSentence A sentence from the trg represented as a vector of words (strings) that corresponds to srcSentence
+   * 
+   * @param A reference to a WordAlignmentMatrix where the word alignment matrix will be written
+   * @return LgProb A log probability for the alignment calculated
+   */
   LgProb getBestAlignment(const std::vector<std::string>& srcSentence, const std::vector<std::string>& trgSentence,
                           WordAlignmentMatrix& bestWaMatrix) override;
   // Obtains the best alignment for the given sentence pair (input
   // parameters are now string vectors)
+
+  /**
+   * @brief Outputs an alignment log probability and the best word alignment matrix for a src and trg sentence
+   *
+   * @details calls AlignmentModel::getBestAlignment, which has a unique implementation in each alignment model
+   *
+   * @see WordAlignmentMatrix::init
+   * @see WordAlignmentMatrix::putAligVec
+   * @see AlignmentModel::getBestAlignment
+   *
+   * @param srcSentence A sentence from the src represented as a vector of WordIndex that corresponds to trgSentence
+   * @param trgSentence A sentence from the trg represented as a vector of WordIndex that corresponds to srcSentence
+   * @param bestWaMatrix A reference to a WordAlignmentMatrix where the word alignment matrix will be written
+   * @return LgProb A log probability for the alignment calculated
+   */
   LgProb getBestAlignment(const std::vector<WordIndex>& srcSentence, const std::vector<WordIndex>& trgSentence,
                           WordAlignmentMatrix& bestWaMatrix) override;
+
+  /**
+   * @brief Outputs an alignment log probability and the best alignment for a src and trg sentence
+   *
+   * @details Convert source and target sentences (char*) to vectors of words (strings) and call another
+   * getBestAlignment() function
+   *
+   * @see StrProcUtils::charItemsToVector
+   *
+   * @param srcSentence A sentence of type string from the src corresponding to trgSentence
+   * @param trgSentence A sentence of type string from the trg corresponding to srcSentence
+   * @param bestAlignment A reference to a PositionIndex vector where the best alignment will be written
+   * @return LgProb A log probability for the alignment calculated
+   */
   LgProb getBestAlignment(const char* srcSentence, const char* trgSentence,
                           std::vector<PositionIndex>& bestAlignment) override;
+
+  /**
+   * @brief Outputs an alignment log probability and best alignment for a src and trg sentence
+   *
+   * @details Converts source and target sentences (char*) to vectors of words (strings) and calls another
+   * getBestAlignment() method found in AlignmentModel.h
+   *
+   * @see StrProcUtils::strVectorToSrcIndexVector
+   * @see StrProcUtils::strVectorToTrgIndexVector
+   * @see AlignmentModel::getBestAlignment
+   *
+   * @param srcSentence A sentence from the src represented as a vector of words (strings) that corresponds to trgSentence
+   * @param trgSentence A sentence from the trg represented as a vector of words (strings) that corresponds to srcSentence
+   * @param bestAlignment A reference to a PositionIndex vector where the best alignment will be written
+   * @return LgProb A log probability for the alignment calculated
+   */
   LgProb getBestAlignment(const std::vector<std::string>& srcSentence, const std::vector<std::string>& trgSentence,
                           std::vector<PositionIndex>& bestAlignment) override;
   // Obtains the best alignment for the given sentence pair (input
