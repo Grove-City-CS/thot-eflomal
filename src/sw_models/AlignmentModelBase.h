@@ -19,6 +19,20 @@ public:
   bool getVariationalBayes() override;
 
   // Functions to read and add sentence pairs
+/**
+ * @brief Read matching sentence pairs in the source and target languages and adds them 
+ * to the AlignmentModelBase::sentenceHandler using addSentencePair
+ * 
+ * @details
+ * Alignment 
+ * @param srcFileName path to a file in the ??? gformat storing the  sentences in the source langiahe 
+ * @param trgFileName path to a file in the ??? format storing sentences in the target language
+ * @param sentCountsFile path to a file in the  ??? formt with ??? information
+ * @param sentRange starting and ending indiced of sentences to be read
+ * @param verbose how much additional output should be printed [0/1]
+ * @return true ?if the operation was successful
+ * @return false ?otherwise
+*/
   bool readSentencePairs(const char* srcFileName, const char* trgFileName, const char* sentCountsFile,
                          std::pair<unsigned int, unsigned int>& sentRange, int verbose = 0) override;
   std::pair<unsigned int, unsigned int> addSentencePair(std::vector<std::string> srcSentStr,
@@ -41,19 +55,94 @@ public:
 
   // Scoring functions for a given alignment
   using AlignmentModel::computeLogProb;
+
+  /**
+  * @brief Read a pointer to a source sentence and a target sentence, a pointer to a mapping of words in source
+  * to words in target otherwise called an alignment
+  * 
+  * @details computing the probability of having a given alignment
+  * 
+  * @param srcSentence pointer to the place in memory containing the source sentences
+  * @param trgSentence pointer to the place in memory containing the target sentences
+  * @param WordAlignmentMatrix pointer to the alignment info (probably a vector)
+  * @param verbose 0 add text else not
+  * 
+  * @return the probability of having a given alignment
+  */
   LgProb computeLogProb(const char* srcSentence, const char* trgSentence, const WordAlignmentMatrix& aligMatrix,
                         int verbose = 0) override;
+  
+
+  /**
+  * @brief Read a pointer to a source sentence and a target sentence, a pointer to a mapping of words in source
+  * to words in target otherwise called an alignment
+  * 
+  * @details computing the probability of having a given alignment
+  * @param srcSentence pointer to the vector of strings holding the source sentence
+  * @param trgSentence pointer to the vector of strings holding the target sentence
+  * @param WordAlignmentMatrix pointer to the alignment info (probably a vector)
+  * @param verbose 0 add text else not
+  * 
+  * @return the probability of having a given alignment
+  */
   LgProb computeLogProb(const std::vector<std::string>& srcSentence, const std::vector<std::string>& trgSentence,
                         const WordAlignmentMatrix& aligMatrix, int verbose = 0) override;
 
   // Scoring functions without giving an alignment
   using AlignmentModel::computeSumLogProb;
+
+
+
+  /**
+  * @brief Read a pointer to the source sentences, the target sentences and compute the probability 
+  * of having the two senteces matching independently of the alignment
+  * 
+  * @details computing the probability of having a match between two sentences
+  * independently of the alignment
+  * 
+  * @param srcSentence pointer to the address holding the source sentence
+  * @param trgSentence pointer to the address holding the target sentence
+  * @param verbose 0 add text else not
+  * 
+  * @return the probability of having a match between the source and target sentences
+  * independently of the alignment
+  */
   LgProb computeSumLogProb(const char* srcSentence, const char* trgSentence, int verbose = 0) override;
+
+  /**
+  * @brief Read a pointer to the source sentences, the target sentences and compute the probability 
+  * of having the two senteces matching independently of the alignment
+  * 
+  * @details computing the probability of having a match between two sentences
+  * independently of the alignment
+  * 
+  * @param srcSentence an adress to a vector of strings holding the source sentence
+  * @param trgSentence an adress to a vector of strings holding the target sentence
+  * @param verbose 0 add text else not
+  * 
+  * @return the probability of having a match between the source and target sentences 
+  * independently of the alignment
+  */
   LgProb computeSumLogProb(const std::vector<std::string>& srcSentence, const std::vector<std::string>& trgSentence,
                            int verbose = 0) override;
+
+    /**
+  * @brief Read a pointer to the source sentences, the target sentences and compute the probability 
+  * of having the two senteces matching independently of the alignment
+  * 
+  * @details apparently there is a difference between sentence and phrase. But it is 
+  * essentially the same thing as computeSumLogProb()
+  * 
+  * @param srcSentence a pointer to a vector of strings to the address holding the source sentence
+  * @param trgSentence a pointer to a vector of strings to the address holding the target sentence
+  * @param verbose 0 add text else not
+  * 
+  * @return the probability of having a match between the source and target phrases 
+  * independently of the alignment
+  */
   LgProb computePhraseSumLogProb(const std::vector<WordIndex>& srcPhrase, const std::vector<WordIndex>& trgPhrase,
                                  int verbose = 0) override;
-
+ 
   // Best-alignment functions
   bool getBestAlignments(const char* sourceTestFileName, const char* targetTestFilename,
                          const char* outFileName) override;
