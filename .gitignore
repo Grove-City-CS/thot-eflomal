@@ -18,3 +18,10 @@ dist/
 *.egg-info/
 __pycache__/
 .venv/
+CMakeCache.txt
+CMakeFiles/
+
+*.cmake
+*.make
+_deps/
+Makefile
