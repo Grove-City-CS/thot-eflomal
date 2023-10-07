@@ -25,3 +25,9 @@ CMakeFiles/
 *.make
 _deps/
 Makefile
+
+doxygen/
+lib/
+*.so
+
+tests/thot_test
