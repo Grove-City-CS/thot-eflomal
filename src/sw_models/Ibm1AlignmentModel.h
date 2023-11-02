@@ -98,6 +98,11 @@ protected:
   virtual void initTargetWord(const std::vector<WordIndex>& nsrc, const std::vector<WordIndex>& trg, PositionIndex j);
   virtual void initWordPair(const std::vector<WordIndex>& nsrc, const std::vector<WordIndex>& trg, PositionIndex i,
                             PositionIndex j);
+
+  /// @brief Initializes lexCounts to 0 for certain (source,target) word pairs, clearing each vector in insertBuffer
+  /// @param insertBuffer - insertBuffer[s] contains some target words that might translate from source word s
+  ///                       Specifically, insertBuffer[s] contains words that occur in some target sentence
+  ///                       which is paired with a source sentence containing s
   virtual void addTranslationOptions(std::vector<std::vector<WordIndex>>& insertBuffer);
   virtual void batchUpdateCounts(const std::vector<std::pair<std::vector<WordIndex>, std::vector<WordIndex>>>& pairs);
   virtual double getCountNumerator(const std::vector<WordIndex>& nsrc, const std::vector<WordIndex>& trg,
