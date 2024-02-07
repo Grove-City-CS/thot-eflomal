@@ -377,3 +377,11 @@ endif()
 if(BUILD_SHARED_LIBRARY)
     add_subdirectory(shared_library)
 endif()
+
+
+# BW: added
+add_executable(run_ibm1 mains/run_ibm1.cc)
+
+target_link_libraries(run_ibm1 PUBLIC
+    thot_lib
+)

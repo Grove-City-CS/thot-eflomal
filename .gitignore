@@ -31,3 +31,4 @@ lib/
 *.so
 
 tests/thot_test
+src/run_ibm1
