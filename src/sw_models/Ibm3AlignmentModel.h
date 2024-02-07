@@ -70,9 +70,9 @@ protected:
       SearchForBestAlignmentFunc;
 
   const PositionIndex MaxFertility = 10;
-  const PositionIndex MaxSentenceLength = 200;
+  const PositionIndex MaxSentenceLength = 200;  // BW: interesting; could PositionIndex values be unsigned char???
   const double DefaultCountThreshold = 1e-5;
-  const double DefaultP1 = 0.05;
+  const double DefaultP1 = 0.05;                // BW: used to set p1 in all c'tors except the copy c'tor
   const double DefaultFertilitySmoothFactor = 64.0;
 
   std::string getModelTypeStr() const override
@@ -97,6 +97,9 @@ protected:
 
   // batch EM functions
   void ibm2Transfer();
+
+  /// @brief Adds to distortionCounts and fertilityCounts from the batch of sentence pairs
+  /// @param pairs A batch of sentence pairs
   void ibm2TransferUpdateCounts(const std::vector<std::pair<std::vector<WordIndex>, std::vector<WordIndex>>>& pairs);
   void hmmTransfer();
   double getSumOfPartitions(PositionIndex phi, PositionIndex i, const Matrix<double>& alpha);
@@ -128,7 +131,16 @@ protected:
   std::shared_ptr<FertilityTable> fertilityTable;
 
   // EM counts
+
+  // distortionCounts[key{i, sourceLen, targetLen}][j] is the count for
+  //   index i in source sentence with null prepended (i in [0,sourceLen]) (1 is first word)
+  //   sourceLen is collapsed to 0 for all keys if using compactAlignmentTable,
+  //             length of original source sentence (i.e., no null) otherwise
+  //   targetLen is length of target sentence
+  //   j is index in target sentence (0 is first word)
   DistortionCounts distortionCounts;
+
+  // fertilityCounts[wordIndex][fert]  for fert in [0, MaxFertility]
   FertilityCounts fertilityCounts;
   double p0Count = 0;
   double p1Count = 0;

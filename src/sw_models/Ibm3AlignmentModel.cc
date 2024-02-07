@@ -132,6 +132,10 @@ void Ibm3AlignmentModel::ibm2TransferUpdateCounts(
             Ibm2AlignmentModel::incrementWordPairCounts(nsrc, trg, i, j, count);
             if (i > 0)
             {
+              // BW: If using a compactAlignmentTable (settable config param in IbmModel2),
+              // we effectively don't include sentence length in the key,
+              // since getCompactedSentenceLength will return 0.
+              // Otherwise, it just echoes back the sentence length.
               DistortionKey key{i, getCompactedSentenceLength(slen), tlen};
 
 #pragma omp atomic
@@ -359,6 +363,7 @@ void Ibm3AlignmentModel::addTranslationOptions(std::vector<std::vector<WordIndex
   }
 }
 
+// BW: TODO: override the batchUpdateCounts to use Gibbs sampling instead of searchForBestAlignment
 void Ibm3AlignmentModel::batchUpdateCounts(
     const std::vector<std::pair<std::vector<WordIndex>, std::vector<WordIndex>>>& pairs)
 {
@@ -390,6 +395,8 @@ void Ibm3AlignmentModel::batchUpdateCounts(
   }
 }
 
+// BW: adds to lexCounts (model 1), alignmentCounts (model 2), and distortionCounts (model 3);
+// The fertilityCounts (model 3) are incremented separately, in updateCounts method (which is what calls this incrementWordPairCounts)
 void Ibm3AlignmentModel::incrementWordPairCounts(const std::vector<WordIndex>& nsrc, const std::vector<WordIndex>& trg,
                                                  PositionIndex i, PositionIndex j, double count)
 {
@@ -401,6 +408,25 @@ void Ibm3AlignmentModel::incrementWordPairCounts(const std::vector<WordIndex>& n
   distortionCounts[key][j - 1] += count;
 }
 
+
+
+// BW: initially thought we might be able to use this as-is, if we could build the parameters from samples instead of search.
+// HOWEVER, the moveScores and swapScores are used in almost all calculations,
+// and I'm not sure what those would correspond to in Gibbs sampling.
+// Instead, we will probably override updateCounts. The new version should use the sampling and...
+// 1. call incrementWordPairCounts (above) to update some model parameters
+// 2. update fertilityCounts
+// 3. update p0Count and p1Count
+
+/// @brief Updates lexCounts (model 1), alignmentCounts (model 2), distortionCounts (model 3), and fertilityCounts (model 3),
+///  p0Count, p1Count (model 3)
+/// @param nsrc - source sentence with null prepended
+/// @param trg - target sentence
+/// @param alignment - the alignment for which to increment the counts
+/// @param aligProb - the probability of the given alignment, according to current model parameters; use calcProbAlignment to compute
+/// @param moveScores - 
+/// @param swapScores 
+/// @return 
 double Ibm3AlignmentModel::updateCounts(const std::vector<WordIndex>& nsrc, const std::vector<WordIndex>& trg,
                                         AlignmentInfo& alignment, double aligProb, const Matrix<double>& moveScores,
                                         const Matrix<double>& swapScores)
@@ -1050,6 +1076,9 @@ void Ibm3AlignmentModel::getInitialAlignmentForSearch(const std::vector<WordInde
   }
 }
 
+// Asks "What if I switch the alignments of targets j1 and j2,
+// so j2 is aligned with what j1 used to be aligned with (in alignment),
+// and vice versa?"
 double Ibm3AlignmentModel::swapScore(const std::vector<WordIndex>& nsrc, const std::vector<WordIndex>& trg,
                                      PositionIndex j1, PositionIndex j2, AlignmentInfo& alignment,
                                      double& cachedAlignmentValue)
@@ -1074,6 +1103,7 @@ double Ibm3AlignmentModel::swapScore(const std::vector<WordIndex>& nsrc, const s
   return change;
 }
 
+// Asks "What if I take alignment and move target j to be aligned with iNew?"
 double Ibm3AlignmentModel::moveScore(const std::vector<WordIndex>& nsrc, const std::vector<WordIndex>& trg,
                                      PositionIndex iNew, PositionIndex j, AlignmentInfo& alignment,
                                      double& cachedAlignmentValue)
