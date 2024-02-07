@@ -18,6 +18,8 @@ public:
       : slen{slen}, tlen{tlen}, alignment(tlen, 0), positionSum(size_t{slen} + 1, 0), fertility(size_t{slen} + 1, 0),
         heads(size_t{slen} + 1, 0), ceptNodes(size_t{tlen} + 1)
   {
+    // Alignment where null word generated all words in target sentence
+
     fertility[0] = tlen;
     for (PositionIndex j = 1; j <= tlen; ++j)
     {
@@ -60,6 +62,7 @@ public:
     PositionIndex iOld = alignment[j - 1];
     positionSum[iOld] -= j;
 
+    // unlink j from the old cept's linked list
     PositionIndex prev = ceptNodes[j].prev;
     PositionIndex next = ceptNodes[j].next;
     if (next > 0)
@@ -69,6 +72,7 @@ public:
     else
       heads[iOld] = next;
 
+    // link j into the proper place in the new cept's linked list
     next = heads[i];
     prev = 0;
     while (next > 0 && next < j)
@@ -148,11 +152,43 @@ public:
   }
 
 private:
+  /// @brief  Length of the source sentence, not including null word
   PositionIndex slen;
+
+  /// @brief Length of the target sentence
   PositionIndex tlen;
+
+  /// @brief alignment[j] is the source word index for target word at index j
+  /// j is in [0, tlen-1]
+  /// alignment[j] is in [0, slen]
   std::vector<PositionIndex> alignment;
+
+  /// @brief positionSum[i] is the sum of the 1-indexed positions of the target words that map to source word i
+  /// i is in [0, slen]
   std::vector<PositionIndex> positionSum;
+
+  /// @brief fertility[i] is the number of target words that map to source word i
+  /// i is in [0, slen]
   std::vector<PositionIndex> fertility;
+
+
+  /* From https://www.nltk.org/_modules/nltk/translate/ibm4.html:
+  :Cept:
+    A source word with non-zero fertility i.e. aligned to one or more
+    target words.
+  :Tablet:
+    The set of target word(s) aligned to a cept.
+  :Head of cept:
+    The first word of the tablet of that cept.
+  */
+
+  /// @brief heads[i] is the head of the cept i
+  /// i is in [0, slen] 
   std::vector<PositionIndex> heads;
+
+  /// @brief ceptNodes[j].prev is the target index of the preceding word in
+  /// the same tablet as j; .next is the following word in the same tablet
+  /// Either of them set to 0 indicates no prev or next, since indices in target
+  /// sentence are 1-indexed
   std::vector<CeptNode> ceptNodes;
 };
