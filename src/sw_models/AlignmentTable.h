@@ -44,6 +44,15 @@ public:
   }
 };
 
+/**
+ * Used in IBM model 2
+ * 
+ * Two hash maps, one for numerators and one for denominators
+ * 
+ * Target word position, source sentence length, target sentence length
+ *  are used to index both numerator and denominator.
+ * Source word position is also used for numerators.
+*/
 class AlignmentTable
 {
 public:

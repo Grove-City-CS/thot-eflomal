@@ -26,7 +26,8 @@ Ibm1AlignmentModel::Ibm1AlignmentModel(Ibm1AlignmentModel& model)
 unsigned int Ibm1AlignmentModel::startTraining(int verbosity)
 {
   clearTempVars();
-  vector<vector<WordIndex>> insertBuffer;
+  /// BW: insertBuffer[s] contains target words that occur in a target sentence paired with a source sentence containing s
+  vector<vector<WordIndex>> insertBuffer;   
   size_t insertBufferItems = 0;
   unsigned int count = 0;
   for (unsigned int n = 0; n < numSentencePairs(); ++n)
@@ -145,21 +146,24 @@ void Ibm1AlignmentModel::batchUpdateCounts(const vector<pair<vector<WordIndex>, 
   for (int line_idx = 0; line_idx < (int)pairs.size(); ++line_idx)
   {
     vector<WordIndex> src = pairs[line_idx].first;
-    vector<WordIndex> nsrc = extendWithNullWord(src);
+    vector<WordIndex> nsrc = extendWithNullWord(src); // BW: this copies the entire vector to add a null word
     vector<WordIndex> trg = pairs[line_idx].second;
     vector<double> probs(nsrc.size());
+
+    // BW: if using sampling, these loops change to use the samples
+    // (perhaps one loop over alignment samples?)
     for (PositionIndex j = 1; j <= trg.size(); ++j)
     {
       double sum = 0;
       for (PositionIndex i = 0; i < nsrc.size(); ++i)
       {
-        probs[i] = getCountNumerator(nsrc, trg, i, j);
+        probs[i] = getCountNumerator(nsrc, trg, i, j);   // BW: compute unnormalized counts
         sum += probs[i];
       }
       for (PositionIndex i = 0; i < nsrc.size(); ++i)
       {
-        double count = probs[i] / sum;
-        incrementWordPairCounts(nsrc, trg, i, j, count);
+        double count = probs[i] / sum;                   // BW: normalize the counts
+        incrementWordPairCounts(nsrc, trg, i, j, count); // BW: add to member LexCounts
       }
     }
   }
@@ -180,7 +184,15 @@ void Ibm1AlignmentModel::incrementWordPairCounts(const vector<WordIndex>& nsrc, 
   WordIndex t = trg[j - 1];
 
 #pragma omp atomic
-  lexCounts[s].find(t)->second += count;
+  lexCounts[s].find(t)->second += count;       // BW: lexCounts is std::vector<LexCountsElem>
+                                               // lexCounts[s] is LexCountsElem, which is OrderedVector<WordIndex, double>, a user-made class
+                                               // the ->second gives the double part of the pair in the OrderedVector
+                                               // 
+                                               // This assumes that t is found in lexCounts[s][t], which is true because addTranslationOptions
+                                               // inits all possible counts to 0 (i.e., if t is in any sentence pair with s).
+                                               // If we switch to sampling, we do NOT want to do that. In particular, eflomal's text_align_make_counts
+                                               // only initializes counts for s,t (there called e,f) if t is LINKED TO s in some sample.
+                                               // That is, one s for each t (for each sample), not all the s's in the source sentence.
 }
 
 void Ibm1AlignmentModel::batchMaximizeProbs()
