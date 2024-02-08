@@ -1,6 +1,5 @@
-#include "sw_models/Ibm1AlignmentModel.h"
-
 #include "nlp_common/ErrorDefs.h"
+#include "sw_models/Ibm1AlignmentModel.h"
 #include "sw_models/Md.h"
 #include "sw_models/MemoryLexTable.h"
 #include "sw_models/SwDefs.h"
@@ -21,14 +20,13 @@ using namespace std;
 #include <memory>
 #include <unordered_map>
 
-class Ibm1Eflomal: public Ibm1AlignmentModel {
-  
+class Ibm1Eflomal : public Ibm1AlignmentModel
+{
+
 public:
   Ibm1Eflomal();
 
 protected:
-
-  // batchUpdateCounts sets the LexCounts from the sentences and the LexTable.
   virtual void batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<WordIndex>>>& pairs) override;
 
   using Ibm1AlignmentModel::addTranslationOptions;
@@ -43,7 +41,7 @@ protected:
   using Ibm1AlignmentModel::initSentencePair;
   virtual void initSentencePair(const std::vector<WordIndex>& src, const std::vector<WordIndex>& trg) override;
 
-    /*
+  /*
    * There is one links array per src-tgt sentence pair
    *
    * Each links array is of the same length as the target sentence
@@ -55,8 +53,6 @@ protected:
    *
    */
   std::vector<std::vector<PositionIndex>> links;
-  // clear vector in temp vars
-  // inside init sentence pair, append random alignment
 
   /*
    * There is one entry for every non-zero mapping from a source word to its
@@ -68,7 +64,6 @@ protected:
    *
    */
   std::map<std::pair<WordIndex, WordIndex>, int> counts;
-  // TODO: int data type?
 
   /*
    * Dirichlet represents the current estimates of the dirichlet priors in the model
@@ -94,11 +89,8 @@ protected:
   std::vector<std::map<WordIndex, float>> priors;
 
 private:
-  // data structures needed for the
   const float NULL_ALPHA = 0.001;
   const float LEX_ALPHA = 0.001;
   const int NULL_LINK = 0xFFFF;
-  const float NULL_PRIOR= 0.02;
-
+  const float NULL_PRIOR = 0.02;
 };
-
