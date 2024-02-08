@@ -29,7 +29,8 @@ void getMostLikelyTranslations(AlignmentModel& model, const std::string& srcWord
     }
 }
 
-
+// Reads src words from stdin (one per line)
+// Will print to stdout the most likely translations of those words
 int main(int argc, const char** argv) {
     if (argc != 7) {
         std::cerr << "USAGE: " << argv[0] << " [useEflomal] [srcVocabFile] [trgVocabFile] [srcSentencesFile] [trgSentencesFile] [numIterations]\n";
