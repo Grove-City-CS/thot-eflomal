@@ -353,7 +353,10 @@ add_library(thot_lib OBJECT
     sw_models/SwDefs.h
     sw_models/SymmetrizedAligner.cc
     sw_models/SymmetrizedAligner.h
+    sw_models/Ibm1Eflomal.cc
+    sw_models/Ibm1Eflomal.h
   )
+
 
 target_include_directories(thot_lib PUBLIC
     "${PROJECT_SOURCE_DIR}/include"
