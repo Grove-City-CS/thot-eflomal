@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "sw_models/Ibm1AlignmentModel.h"
+#include "sw_models/Ibm1Eflomal.h"
 
 /// @brief Get the most likely translations (and their scores) for a src word
 /// @param model used to make the translations
@@ -30,20 +31,27 @@ void getMostLikelyTranslations(AlignmentModel& model, const std::string& srcWord
 
 
 int main(int argc, const char** argv) {
-    if (argc != 6) {
-        std::cerr << "USAGE: " << argv[0] << " [srcVocabFile] [trgVocabFile] [srcSentencesFile] [trgSentencesFile] [numIterations]\n";
+    if (argc != 7) {
+        std::cerr << "USAGE: " << argv[0] << " [useEflomal] [srcVocabFile] [trgVocabFile] [srcSentencesFile] [trgSentencesFile] [numIterations]\n";
         return -1;
     }
 
     const int verbosity = 2;
 
-    const char* srcVocabFile = argv[1];
-    const char* trgVocabFile = argv[2];
-    const char* srcFile = argv[3];
-    const char* trgFile = argv[4];
-    const int numIterations = atoi(argv[5]);
+    bool useEflomal = (atoi(argv[1]) != 0);
+    const char* srcVocabFile = argv[2];
+    const char* trgVocabFile = argv[3];
+    const char* srcFile = argv[4];
+    const char* trgFile = argv[5];
+    const int numIterations = atoi(argv[6]);
 
-    Ibm1AlignmentModel *model = new Ibm1AlignmentModel();
+    Ibm1AlignmentModel *model;
+    if (useEflomal) {
+        model = new Ibm1Eflomal();
+    }
+    else {
+        model = new Ibm1AlignmentModel();
+    }
 
     model->loadGIZASrcVocab(srcVocabFile, (verbosity>1));
     if (verbosity > 0) {
