@@ -41,7 +41,7 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
         old_s = src[old_i];
       }
       pair<WordIndex, WordIndex> pairToUpdate = {t, old_s};
-      if (find(counts.begin(), counts.end(), pairToUpdate) != counts.end()) // this should always be true
+      if (counts.find(pairToUpdate) != counts.end()) // this should always be true
       {
         if (counts[pairToUpdate] <= 1)
         {
@@ -216,7 +216,7 @@ void Ibm1Eflomal::initSentencePair(const vector<WordIndex>& src, const vector<Wo
   links.push_back(newLink);
 }
 
-size_t random_categorical_from_cumulative(vector<float> ps)
+size_t Ibm1Eflomal::random_categorical_from_cumulative(vector<float> ps)
 {
   float max = ps[ps.size() - 1];
   double randomVal = rand() / (RAND_MAX + 1.0) * max;

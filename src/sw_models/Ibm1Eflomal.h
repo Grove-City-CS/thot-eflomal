@@ -41,6 +41,8 @@ protected:
   using Ibm1AlignmentModel::initSentencePair;
   virtual void initSentencePair(const std::vector<WordIndex>& src, const std::vector<WordIndex>& trg) override;
 
+  virtual size_t random_categorical_from_cumulative(vector<float> ps);
+
   /*
    * There is one links array per src-tgt sentence pair
    *
