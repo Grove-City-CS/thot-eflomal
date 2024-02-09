@@ -76,7 +76,7 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
 
       // update probabilities assuming this pair is unmapped
       float ps_sum = 0.0;
-      for (int i = 0; i < src.size(); i++)
+      for (size_t i = 0; i < src.size(); i++)
       {
         WordIndex s = src[i]; // ith word in src
         // get the number of times that t is caused by s
@@ -93,7 +93,7 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
         }
         // multiply the estimated probabilities (dirichlet) by the counts to get quality
         float dirichletVal = LEX_ALPHA;
-        if (dirichlet.size() > t && dirichlet[t].find(s) != dirichlet[t].end()) // TODO: stuff
+        if (dirichlet.size() > t && dirichlet[t].find(s) != dirichlet[t].end())
         {
           dirichletVal = dirichlet[t][s];
         }
@@ -102,7 +102,7 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
         ps.push_back(ps_sum);
         // include null word in the sum
         double dirichletValNull = LEX_ALPHA;
-        if (dirichlet.size() > t && dirichlet[t].find(NULL_WORD) != dirichlet[t].end()) // TODO: stuff
+        if (dirichlet.size() > t && dirichlet[t].find(NULL_WORD) != dirichlet[t].end())
         {
           dirichletValNull = dirichlet[t][NULL_WORD];
         }
@@ -118,7 +118,7 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
       // determine based on ps_sum which source token caused the target token
 
       // the probability of any i is proportional to its probability in ps
-      int new_i = random_categorical_from_cumulative(ps);
+      size_t new_i = random_categorical_from_cumulative(ps);
       int new_s = -1;
       if (new_i < src.size())
       {
@@ -133,21 +133,20 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
 
       // increase the count and dirichlet variables to reflect the new i and s
 
-      pair<WordIndex, WordIndex> pairToUpdate = {t, new_s};
-      if (counts.find(pairToUpdate) != counts.end())
+      pair<WordIndex, WordIndex> pairToUpdate2 = {t, new_s};
+      if (counts.find(pairToUpdate2) != counts.end())
       {
-        counts[pairToUpdate] = counts[pairToUpdate] + 1;
+        counts[pairToUpdate2] = counts[pairToUpdate2] + 1;
       }
       else
       {
-        counts.insert({pairToUpdate, 1});
+        counts.insert({pairToUpdate2, 1});
       }
       float dirichletVal = LEX_ALPHA;
       if (dirichlet.size() > t && dirichlet[t].find(new_s) != dirichlet[t].end())
       {
         dirichletVal = dirichlet[t][new_s];
       }
-      float newDirichletVal = 1 / (1 / dirichletVal + 1);
       if (dirichlet.size() <= t)
       {
         while (dirichlet.size() <= t) // is this the best way to do this?
@@ -156,12 +155,12 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
           dirichlet.push_back(map);
         }
       }
-      dirichlet[t][new_s] = 1.0 / (1.0 / dirichlet[t][new_s] + 1.0);
+      dirichlet[t][new_s] = 1 / (1 / dirichletVal + 1);
     }
   }
 }
 
-// get rid of everything to do with lexCounts, keep lexTable
+// difference from original: get rid of everything to do with lexCounts, keep lexTable
 void Ibm1Eflomal::addTranslationOptions(vector<vector<WordIndex>>& insertBuffer)
 {
   WordIndex maxSrcWordIndex = (WordIndex)insertBuffer.size() - 1;
@@ -182,12 +181,12 @@ void Ibm1Eflomal::batchMaximizeProbs()
       if (variationalBayes)
         numer += alpha;
       denom += numer;
-      lexTable->setNumerator(s, pair.first, numer); // originally has log...don't think I need that?
+      lexTable->setNumerator(s, pair.first, (float)log(numer));
       pair.second = 0.0;
     }
     if (denom == 0)
       denom = 1;
-    lexTable->setDenominator(s, denom); // originally has log...don't think I need that?
+    lexTable->setDenominator(s, (float)log(denom));
   }
 }
 
@@ -200,7 +199,7 @@ void Ibm1Eflomal::clearTempVars()
 void Ibm1Eflomal::initSentencePair(const vector<WordIndex>& src, const vector<WordIndex>& trg)
 {
   vector<PositionIndex> newLink;
-  for (int j = 0; j < trg.size(); j++)
+  for (size_t j = 0; j < trg.size(); j++)
   {
     int linkIndex = rand() % src.size(); // should be in range [0, src.length)
     newLink.push_back(linkIndex);        // assumes that we are adding links for each sentence chronologically
@@ -217,11 +216,11 @@ void Ibm1Eflomal::initSentencePair(const vector<WordIndex>& src, const vector<Wo
   links.push_back(newLink);
 }
 
-int random_categorical_from_cumulative(vector<float> ps)
+size_t random_categorical_from_cumulative(vector<float> ps)
 {
   float max = ps[ps.size() - 1];
   double randomVal = rand() / (RAND_MAX + 1.0) * max;
-  for (int i = 0; i < ps.size() - 1; i++)
+  for (size_t i = 0; i < ps.size() - 1; i++)
   {
     if (ps[i] >= randomVal)
     {
