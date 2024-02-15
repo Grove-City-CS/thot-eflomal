@@ -110,6 +110,13 @@ if(WIN32)
     add_link_options(/WX)
 endif()
 
+#if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+add_compile_options(-pg -g)
+add_link_options(-pg)
+#endif()
+
+#set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} -g -pg)
+
 add_subdirectory(src)
 
 if(BUILD_TESTS)
