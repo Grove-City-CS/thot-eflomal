@@ -21,11 +21,11 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
 {
   for (int line_idx = 0; line_idx < (int)pairs.size(); ++line_idx)
   {
-    vector<WordIndex> src = pairs[line_idx].first;
-    vector<WordIndex> nsrc = extendWithNullWord(src);
+    vector<WordIndex> osrc = pairs[line_idx].first;
+    vector<WordIndex> src = extendWithNullWord(osrc);
     vector<WordIndex> trg = pairs[line_idx].second;
-    vector<float> ps(nsrc.size());
-    for (PositionIndex j = 1; j <= trg.size(); ++j)
+    vector<float> ps(src.size());
+    for (PositionIndex j = 0; j < trg.size(); j++)
     {
       WordIndex t = trg[j];
       // get the word index in the source sentence that previously mapped to this word
@@ -210,7 +210,7 @@ void Ibm1Eflomal::initSentencePair(const vector<WordIndex>& src, const vector<Wo
     }
     else
     {
-      counts[pairToUpdate] = 0;
+      counts[pairToUpdate] = 1;
     }
   }
   links.push_back(newLink);
