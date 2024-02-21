@@ -21,11 +21,11 @@ void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<
 {
   for (int line_idx = 0; line_idx < (int)pairs.size(); ++line_idx)
   {
-    vector<WordIndex> src = pairs[line_idx].first;
-    vector<WordIndex> nsrc = extendWithNullWord(src);
+    vector<WordIndex> osrc = pairs[line_idx].first;
+    vector<WordIndex> src = extendWithNullWord(osrc);
     vector<WordIndex> trg = pairs[line_idx].second;
-    vector<float> ps(nsrc.size());
-    for (PositionIndex j = 1; j <= trg.size(); ++j)
+    vector<float> ps(src.size());
+    for (PositionIndex j = 0; j < trg.size(); j++)
     {
       WordIndex t = trg[j];
       // get the word index in the source sentence that previously mapped to this word
@@ -201,16 +201,23 @@ void Ibm1Eflomal::initSentencePair(const vector<WordIndex>& src, const vector<Wo
   vector<PositionIndex> newLink;
   for (size_t j = 0; j < trg.size(); j++)
   {
-    int linkIndex = rand() % src.size(); // should be in range [0, src.length)
-    newLink.push_back(linkIndex);        // assumes that we are adding links for each sentence chronologically
-    pair<WordIndex, WordIndex> pairToUpdate = {trg[j], src[linkIndex]};
+    size_t linkIndex = rand() % (src.size() + 1); // src does not include the null word, so add 1 to the length
+    newLink.push_back(linkIndex);                 // assumes that we are adding links for each sentence chronologically
+
+    // add the trg word / src word pair to counts, accounting for src not containing the null word
+    WordIndex srcWord = 0;
+    if (linkIndex != 0)
+    {
+      srcWord = src[linkIndex - 1];
+    }
+    pair<WordIndex, WordIndex> pairToUpdate = {trg[j], srcWord};
     if (counts.find(pairToUpdate) != counts.end())
     {
       counts[pairToUpdate] = counts[pairToUpdate] + 1;
     }
     else
     {
-      counts[pairToUpdate] = 0;
+      counts[pairToUpdate] = 1;
     }
   }
   links.push_back(newLink);
