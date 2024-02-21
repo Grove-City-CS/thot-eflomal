@@ -388,3 +388,8 @@ add_executable(run_ibm1 mains/run_ibm1.cc)
 target_link_libraries(run_ibm1 PUBLIC
     thot_lib
 )
+
+find_package(OpenMP)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(run_ibm1 PUBLIC OpenMP::OpenMP_CXX)
+endif()
