@@ -201,9 +201,16 @@ void Ibm1Eflomal::initSentencePair(const vector<WordIndex>& src, const vector<Wo
   vector<PositionIndex> newLink;
   for (size_t j = 0; j < trg.size(); j++)
   {
-    int linkIndex = rand() % src.size(); // should be in range [0, src.length)
-    newLink.push_back(linkIndex);        // assumes that we are adding links for each sentence chronologically
-    pair<WordIndex, WordIndex> pairToUpdate = {trg[j], src[linkIndex]};
+    size_t linkIndex = rand() % (src.size() + 1); // src does not include the null word, so add 1 to the length
+    newLink.push_back(linkIndex);                 // assumes that we are adding links for each sentence chronologically
+
+    // add the trg word / src word pair to counts, accounting for src not containing the null word
+    WordIndex srcWord = 0;
+    if (linkIndex != 0)
+    {
+      srcWord = src[linkIndex - 1];
+    }
+    pair<WordIndex, WordIndex> pairToUpdate = {trg[j], srcWord};
     if (counts.find(pairToUpdate) != counts.end())
     {
       counts[pairToUpdate] = counts[pairToUpdate] + 1;
