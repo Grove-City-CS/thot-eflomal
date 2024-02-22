@@ -32,3 +32,4 @@ lib/
 
 tests/thot_test
 src/run_ibm1
+lib/*
