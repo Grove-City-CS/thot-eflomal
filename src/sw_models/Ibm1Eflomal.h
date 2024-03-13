@@ -35,6 +35,12 @@ protected:
   using Ibm1AlignmentModel::batchMaximizeProbs;
   virtual void batchMaximizeProbs();
 
+  using Ibm1AlignmentModel::train;
+  virtual void train(int verbosity) override;
+
+  virtual void batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, vector<WordIndex>>>& pairs,
+                                        unsigned int iter_num);
+
   using Ibm1AlignmentModel::clearTempVars;
   virtual void clearTempVars() override;
 

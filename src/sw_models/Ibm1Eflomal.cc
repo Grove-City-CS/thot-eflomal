@@ -19,11 +19,45 @@ Ibm1Eflomal::Ibm1Eflomal()
 
 void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<WordIndex>>>& pairs)
 {
-  for (int line_idx = 0; line_idx < (int)pairs.size(); ++line_idx)
+  std::cout << "DON'T CALL ME!!! DON'T CALL ME !!!" << std::endl;
+}
+
+void Ibm1Eflomal::train(int verbosity)
+{
+  vector<pair<vector<WordIndex>, vector<WordIndex>>> buffer;
+  unsigned int n = 0;
+  for (; n < numSentencePairs(); ++n)
   {
-    vector<WordIndex> osrc = pairs[line_idx].first;
+    vector<WordIndex> src = getSrcSent(n);
+    vector<WordIndex> trg = getTrgSent(n);
+    if (sentenceLengthIsOk(src) && sentenceLengthIsOk(trg))
+      buffer.push_back(make_pair(src, trg));
+
+    if (buffer.size() >= ThreadBufferSize)
+    {
+      batchUpdateCountsEflomal(buffer, n / ThreadBufferSize);
+      buffer.clear();
+    }
+  }
+  if (buffer.size() > 0)
+  {
+    batchUpdateCountsEflomal(buffer, n / ThreadBufferSize);
+    buffer.clear();
+  }
+
+  batchMaximizeProbs();
+}
+
+void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, vector<WordIndex>>>& pairs,
+                                           unsigned int iter_num)
+{
+  for (int buf_idx = 0; buf_idx < (int)pairs.size(); ++buf_idx)
+  {
+    int line_idx = iter_num * ThreadBufferSize + buf_idx;
+
+    vector<WordIndex> osrc = pairs[buf_idx].first;
     vector<WordIndex> src = extendWithNullWord(osrc);
-    vector<WordIndex> trg = pairs[line_idx].second;
+    vector<WordIndex> trg = pairs[buf_idx].second;
     vector<float> ps(src.size());
     for (PositionIndex j = 0; j < trg.size(); j++)
     {
