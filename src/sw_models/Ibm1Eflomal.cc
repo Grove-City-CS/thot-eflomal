@@ -19,7 +19,8 @@ Ibm1Eflomal::Ibm1Eflomal()
 
 void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<WordIndex>>>& pairs)
 {
-  std::cout << "DON'T CALL ME!!! DON'T CALL ME !!!" << std::endl;
+  std::cout << "DON'T CALL ME !!! DON'T CALL ME !!!" << std::endl;
+  // TODO: throw exception
 }
 
 void Ibm1Eflomal::train(int verbosity)
@@ -106,6 +107,10 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
           }
           dirichlet[t].insert({old_s, newDirichletVal});
         }
+      }
+      else
+      {
+        // TODO: throw exception
       }
 
       // update probabilities assuming this pair is unmapped
