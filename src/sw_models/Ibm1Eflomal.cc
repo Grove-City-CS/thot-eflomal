@@ -58,9 +58,9 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
     vector<WordIndex> osrc = pairs[buf_idx].first;
     vector<WordIndex> src = extendWithNullWord(osrc);
     vector<WordIndex> trg = pairs[buf_idx].second;
-    vector<float> ps(src.size());
     for (PositionIndex j = 0; j < trg.size(); j++)
     {
+      vector<float> ps;
       WordIndex t = trg[j];
       // get the word index in the source sentence that previously mapped to this word
       WordIndex old_i = links[line_idx][j];
