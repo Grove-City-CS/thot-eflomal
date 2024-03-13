@@ -29,28 +29,78 @@ void getMostLikelyTranslations(AlignmentModel& model, const std::string& srcWord
     }
 }
 
+/// @brief Print to stdout the most likely translations (and their scores) for each word
+/// @param model used to make the translations
+/// @param srcWords words to translate
+void printPredictions(AlignmentModel& model, const std::vector<std::string> &srcWords) {
+    for (auto& word : srcWords) {
+        std::vector< std::pair<std::string, Score> > bestTranslations;
+
+        getMostLikelyTranslations(model, word, 5, bestTranslations);
+        
+        std::cout << word << ":";
+        for (auto iter=bestTranslations.begin(); iter != bestTranslations.end(); iter++) {
+            std::cout << iter->first << "," << iter->second << ",";
+        }
+        std::cout << std::endl;
+    }
+}
+
+
+/// @brief Get words from a file, appending them to a vector
+/// @param filename file name containing the words
+/// @param[out] words Words from the file will be appended to this vector
+void fillWordsFromFile(std::string filename, std::vector<std::string> &words) {
+    std::fstream file;
+    string word;
+ 
+    // opening file
+    file.open(filename.c_str());
+ 
+    // extracting words from the file
+    while (file >> word) {
+        words.push_back(word);
+    }
+    file.close();
+}
+
 // Reads src words from stdin (one per line)
 // Will print to stdout the most likely translations of those words
 int main(int argc, const char** argv) {
-    if (argc != 7) {
-        std::cerr << "USAGE: " << argv[0] << " [useEflomal] [srcVocabFile] [trgVocabFile] [srcSentencesFile] [trgSentencesFile] [numIterations]\n";
+    if (argc != 8) {
+        std::cerr << "USAGE: " << argv[0] << " [useEflomal: 0 or 1] [srcVocabFile] [trgVocabFile] [srcSentencesFile] [trgSentencesFile] [numIterations] [srcTestWordsFile]\n";
         return -1;
     }
 
     const int verbosity = 2;
 
-    bool useEflomal = (atoi(argv[1]) != 0);
-    const char* srcVocabFile = argv[2];
-    const char* trgVocabFile = argv[3];
-    const char* srcFile = argv[4];
-    const char* trgFile = argv[5];
-    const int numIterations = atoi(argv[6]);
+    int nextArg = 1;
+    bool useEflomal = (strtol(argv[nextArg], NULL, 10) != 0);
+    nextArg++;
+    const char* srcVocabFile = argv[nextArg];
+    nextArg++;
+    const char* trgVocabFile = argv[nextArg];
+    nextArg++;
+    const char* srcFile = argv[nextArg];
+    nextArg++;
+    const char* trgFile = argv[nextArg];
+    nextArg++;
+    const int numIterations = atoi(argv[nextArg]);
+    nextArg++;
+    const char* testWordsFile = argv[nextArg];
+    nextArg++;
 
     Ibm1AlignmentModel *model;
     if (useEflomal) {
+        if (verbosity > 0) {
+            std::cout << "Using EFLOMAL..." << std::endl;
+        }
         model = new Ibm1Eflomal();
     }
     else {
+        if (verbosity > 0) {
+            std::cout << "Using original IBM model..." << std::endl;
+        }
         model = new Ibm1AlignmentModel();
     }
 
@@ -80,10 +130,17 @@ int main(int argc, const char** argv) {
     if (verbosity > 0) {
         std::time_t the_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
         std::cout << std::ctime(&the_time_t);
-        std::cout << " Beginning training " << numIterations << " iterations..." << std::endl;
+        std::cout << "Beginning pre-training setup... " << std::endl;
     }
 
     model->startTraining((verbosity > 1));
+
+    if (verbosity > 0) {
+        std::time_t the_time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+        std::cout << std::ctime(&the_time_t);
+        std::cout << "Beginning training for " << numIterations << " iterations..." << std::endl;
+    }
+    
     for (int iter = 1; iter <= numIterations; ++iter) {
         if (verbosity > 1 && iter % 1 == 0) {
             std::cout << "Starting training iteration " << iter << std::endl;
@@ -99,17 +156,13 @@ int main(int argc, const char** argv) {
         std::cout << "Done training " << numIterations << " iterations." << std::endl;
     }
 
-    std::string line;
-    while (std::getline(std::cin, line) && line.size() > 0) {
-        std::vector< std::pair<std::string, Score> > bestTranslations;
+    {
+        std::vector<std::string> words;
 
-        getMostLikelyTranslations(*model, line, 5, bestTranslations);
-        
-        std::cout << line << ":";
-        for (auto iter=bestTranslations.begin(); iter != bestTranslations.end(); iter++) {
-            std::cout << iter->first << "," << iter->second << ",";
-        }
-        std::cout << std::endl;
+        fillWordsFromFile(testWordsFile, words);
+        printPredictions(*model, words);
     }
 
 }
+
+

@@ -61,6 +61,7 @@ endif()
 option(BUILD_SHARED_LIBRARY "Build shared library" ON)
 option(BUILD_PYTHON_MODULE "Build Python module" ON)
 option(BUILD_TESTS "Build unit tests" ON)
+option(PROFILE "Enable gprof profiling" OFF)
 
 if(WIN32)
     add_compile_options(/D_ITERATOR_DEBUG_LEVEL=0)
@@ -108,6 +109,14 @@ endif()
 if(WIN32)
     add_compile_options(/WX)
     add_link_options(/WX)
+endif()
+
+
+add_compile_options("$<$<CONFIG:Debug>:-g>")
+
+if(PROFILE)
+    add_compile_options(-pg)
+    add_link_options(-pg)
 endif()
 
 add_subdirectory(src)
