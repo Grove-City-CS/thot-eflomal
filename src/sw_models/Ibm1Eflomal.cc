@@ -216,7 +216,7 @@ void Ibm1Eflomal::batchMaximizeProbs()
     map<WordIndex, float> elem = dirichlet[s];
     for (auto& pair : elem)
     {
-      double numer = pair.second; // numerator dirichlet, denominator for src word and sum across
+      double numer = 1 / pair.second; // numerator 1 / dirichlet, denominator for src word and sum across
       if (variationalBayes)
         numer += alpha;
       denom += numer;
