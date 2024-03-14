@@ -90,7 +90,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
         else
         {
           // decrease the count and dirichlet prior of the word old_s
-          counts.insert({pairToUpdate, counts.at(pairToUpdate) - 1});
+          counts[pairToUpdate] = counts[pairToUpdate] - 1;
           float dirichletVal = LEX_ALPHA; // handle case where dirichlet is null
           if (dirichlet.size() > t && dirichlet[t].find(old_s) != dirichlet[t].end())
           {
@@ -105,7 +105,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
               dirichlet.push_back(map);
             }
           }
-          dirichlet[t].insert({old_s, newDirichletVal});
+          dirichlet[t][old_s] = newDirichletVal;
         }
       }
       else
