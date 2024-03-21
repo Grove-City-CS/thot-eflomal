@@ -111,6 +111,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
       else
       {
         // TODO: throw exception
+        std::cout << "********* COUNTS ENTRY MISSING!!!!!\n";
       }
 
       // update probabilities assuming this pair is unmapped
@@ -209,7 +210,6 @@ void Ibm1Eflomal::addTranslationOptions(vector<vector<WordIndex>>& insertBuffer)
 // use values from dirichlet instead of lexCounts
 void Ibm1Eflomal::batchMaximizeProbs()
 {
-#pragma omp parallel for schedule(dynamic)
   for (int s = 0; s < (int)dirichlet.size(); ++s)
   {
     double denom = 0;
