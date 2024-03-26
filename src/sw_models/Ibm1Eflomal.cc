@@ -135,7 +135,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
         float dirichletVal = LEX_ALPHA;
         if (dirichlet.size() > t && dirichlet[t].find(s) != dirichlet[t].end())
         {
-          dirichletVal = dirichlet[t][s];
+          dirichletVal = 1 / dirichlet[t][s];
         }
         ps_sum += dirichletVal * (alpha + n);
         // add this number to the cumulative probability distribution
@@ -144,7 +144,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
         double dirichletValNull = LEX_ALPHA;
         if (dirichlet.size() > t && dirichlet[t].find(NULL_WORD) != dirichlet[t].end())
         {
-          dirichletValNull = dirichlet[t][NULL_WORD];
+          dirichletValNull = 1 / dirichlet[t][NULL_WORD];
         }
         int nullWordCount = 0;
         if (counts.find(pair<WordIndex, WordIndex>(t, NULL_WORD)) != counts.end())
@@ -210,22 +210,29 @@ void Ibm1Eflomal::addTranslationOptions(vector<vector<WordIndex>>& insertBuffer)
 // use values from dirichlet instead of lexCounts
 void Ibm1Eflomal::batchMaximizeProbs()
 {
-  for (int s = 0; s < (int)dirichlet.size(); ++s)
+  vector<int> srcDenom;
+  for (int t = 0; t < (int)dirichlet.size(); ++t)
   {
-    double denom = 0;
-    map<WordIndex, float> elem = dirichlet[s];
+    map<WordIndex, float> elem = dirichlet[t];
     for (auto& pair : elem)
     {
       double numer = 1 / pair.second; // numerator 1 / dirichlet, denominator for src word and sum across
       if (variationalBayes)
         numer += alpha;
-      denom += numer;
-      lexTable->setNumerator(s, pair.first, (float)log(numer));
-      pair.second = 0.0;
+      lexTable->setNumerator(pair.first, t, (float)log(numer));
+
+      // increment denom count for the source word
+      while (srcDenom.size() <= pair.first)
+      {
+        srcDenom.push_back(0);
+      }
+      srcDenom[pair.first] = srcDenom[pair.first] + numer;
     }
-    if (denom == 0)
-      denom = 1;
-    lexTable->setDenominator(s, (float)log(denom));
+  }
+
+  for (int i = 0; i < (int)srcDenom.size(); i++)
+  {
+    lexTable->setDenominator(i, (float)log(srcDenom[i]));
   }
 }
 
