@@ -99,7 +99,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
           float newDirichletVal = 1 / (1 / dirichletVal - 1);
           if (dirichlet.size() <= t)
           {
-            while (dirichlet.size() <= t) // is this the best way to do this?
+            while (dirichlet.size() <= t)
             {
               map<WordIndex, float> map;
               dirichlet.push_back(map);
@@ -189,7 +189,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
       }
       if (dirichlet.size() <= t)
       {
-        while (dirichlet.size() <= t) // is this the best way to do this?
+        while (dirichlet.size() <= t)
         {
           map<WordIndex, float> map;
           dirichlet.push_back(map);
@@ -210,7 +210,8 @@ void Ibm1Eflomal::addTranslationOptions(vector<vector<WordIndex>>& insertBuffer)
 // use values from dirichlet instead of lexCounts
 void Ibm1Eflomal::batchMaximizeProbs()
 {
-  vector<int> srcDenom;
+  lexTable->clear();
+  vector<double> srcDenom;
   for (int t = 0; t < (int)dirichlet.size(); ++t)
   {
     map<WordIndex, float> elem = dirichlet[t];
@@ -265,6 +266,21 @@ void Ibm1Eflomal::initSentencePair(const vector<WordIndex>& src, const vector<Wo
     {
       counts[pairToUpdate] = 1;
     }
+    WordIndex t = trg[j];
+    float dirichletVal = LEX_ALPHA;
+    if (dirichlet.size() > t && dirichlet[t].find(srcWord) != dirichlet[t].end())
+    {
+      dirichletVal = dirichlet[t][srcWord];
+    }
+    if (dirichlet.size() <= t)
+    {
+      while (dirichlet.size() <= t)
+      {
+        map<WordIndex, float> map;
+        dirichlet.push_back(map);
+      }
+    }
+    dirichlet[t][srcWord] = 1 / (1 / dirichletVal + 1);
   }
   links.push_back(newLink);
 }
