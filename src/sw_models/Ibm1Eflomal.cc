@@ -13,14 +13,29 @@
 
 using namespace std;
 
+class eflomalBatchUpdateCountsException : public std::exception {
+  public:
+  string what(){
+    return "Ibm1Eflomal::batchUpdateCounts should never be called";
+  }
+
+};
+
+class eflomalMissingCountsEntryException : public std::exception {
+  public:
+  string what(){
+    return "Value is missing from Ibm1Eflomal::counts";
+  }
+
+};
+
 Ibm1Eflomal::Ibm1Eflomal()
 {
 }
 
 void Ibm1Eflomal::batchUpdateCounts(const vector<pair<vector<WordIndex>, vector<WordIndex>>>& pairs)
 {
-  std::cout << "DON'T CALL ME !!! DON'T CALL ME !!!" << std::endl;
-  // TODO: throw exception
+  throw eflomalBatchUpdateCountsException();
 }
 
 void Ibm1Eflomal::train(int verbosity)
@@ -110,8 +125,7 @@ void Ibm1Eflomal::batchUpdateCountsEflomal(const vector<pair<vector<WordIndex>, 
       }
       else
       {
-        // TODO: throw exception
-        std::cout << "********* COUNTS ENTRY MISSING!!!!!\n";
+        throw eflomalMissingCountsEntryException();
       }
 
       // update probabilities assuming this pair is unmapped
