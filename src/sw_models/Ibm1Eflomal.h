@@ -97,8 +97,8 @@ protected:
   std::vector<std::map<WordIndex, float>> priors;
 
 private:
-  const float NULL_ALPHA = 0.001;
-  const float LEX_ALPHA = 0.001;
+  const float NULL_ALPHA = 0.005;
+  const float LEX_ALPHA = 0.005;
   const WordIndex NULL_LINK = 0xFFFF;
   const float NULL_PRIOR = 0.02;
 };
