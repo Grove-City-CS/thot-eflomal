@@ -444,6 +444,12 @@ bool AlignmentModelBase::load(const char* prefFileName, int verbose)
       if (retVal == THOT_ERROR)
         return THOT_ERROR;
     }
+    catch (const YAML::InvalidNode&)
+    {
+      retVal = loadOldConfig(prefFileName, verbose);
+      if (retVal == THOT_ERROR)
+        return THOT_ERROR;
+    }
 
     // Load vocabularies if they exist
     string srcVocFileName = prefFileName;
